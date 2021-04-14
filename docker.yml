@@ -1,0 +1,55 @@
+- name: Docker Configuration
+  hosts: localhost
+  tasks: 
+      - name: Configure Docker Repository
+        yum_repository:
+               name: docker
+               description: docker repo
+               baseurl: https://download.docker.com/linux/centos/7/x86_64/stable/
+               gpgcheck: no
+
+      - name: Running YUM Repolist
+        command: "yum repolist"
+
+      - name: Install Docker
+        package:
+               name: "docker-ce-3:18.09.1-3.el7"
+               state: present
+
+      - name: Start and Enabled the Docker Service
+        service: 
+               name: docker
+               state: started
+               enabled: yes
+
+      - name: Install Python3
+        package:
+                name: python3
+                state: present
+
+      - name: Install Docker SDK
+        command: pip3 install docker
+
+      - name: Launch Docker Container
+        docker_container:
+                name: "Dock_Con"
+                image: docker_ssh
+                state: started
+                exposed_ports: 80
+                ports: 8080:80   
+          
+      - name: Retrieve Docker Container IP
+        docker_container_info:
+                name: "Dock_Con"
+        register: x
+
+      - name: IP Address of Docker
+        debug: 
+          var: x.container.NetworkSettings.IPAddress
+
+      - name: Update Inventory File
+        blockinfile:
+                dest: "/etc/hosts.txt"
+                block: |
+                        [docker]
+                        {{ x['container']['NetworkSettings']['IPAddress'] }} ansible_ssh_user=root ansible_ssh_pass=redhat ansible_connection=ssh     

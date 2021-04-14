@@ -1,0 +1,18 @@
+- name: Install WebServer
+  hosts: docker
+  tasks: 
+       - name: Download Httpd Software
+         package:
+           name: httpd
+           state: present
+
+       - name: Copy a WebPage
+         copy:
+           content: "Task Completed"
+           dest: "/var/www/html/docker.html"
+
+       - name: Start Httpd Services
+         command: /usr/sbin/httpd          
+
+
+
